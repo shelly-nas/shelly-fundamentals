@@ -69,7 +69,7 @@ De deployworkflow kopieert **alleen dit bestand** (als `docker-compose.yaml`) en
 
 ## Client-image
 
-- Multi-stage: `node:20` bouwt met `npm ci && npm run build`, daarna `nginx:alpine` met `dist/`.
+- Multi-stage: `node:22` bouwt met `npm ci && npm run build`, daarna `nginx:alpine` met `dist/`.
 - `nginx.conf` doet SPA-fallback (`try_files ... /index.html`) en proxyt `/api/` naar `server:3000`.
   De upstream staat in een variabele met `resolver 127.0.0.11`, zodat nginx ook opstart als de
   server nog niet draait.

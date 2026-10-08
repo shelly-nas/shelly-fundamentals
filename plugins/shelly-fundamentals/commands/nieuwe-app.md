@@ -33,7 +33,7 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 | `skills/release-deploy/templates/release-please-config.json` | `release-please-config.json` (bij Python: de `extra-files`-regel voor `server/package.json` weghalen) |
 | `skills/release-deploy/templates/.release-please-manifest.json` | `.release-please-manifest.json` |
 | `skills/design-richtlijnen/theme.ts` | `client/src/theme.ts` |
-| `app-template/CLAUDE.md` | `CLAUDE.md` (`__BACKEND__` = "Node 20 + Express + TypeScript" of "Python 3.12 + FastAPI") |
+| `app-template/CLAUDE.md` | `CLAUDE.md` (`__BACKEND__` = "Node 22 + Express + TypeScript" of "Python 3.12 + FastAPI") |
 | `app-template/.claude/settings.json` | `.claude/settings.json` |
 
 Bouw daarna een minimale, werkende basis:

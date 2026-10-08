@@ -10,7 +10,7 @@ Elke app bestaat uit drie onderdelen, elk in een eigen map met een eigen Dockerf
 | Map | Rol | Standaard |
 |---|---|---|
 | `client/` | Frontend | React + TypeScript, gebouwd met Vite, geserveerd door nginx |
-| `server/` | API | Node 20 + Express + TypeScript, **of** Python als de app iets met AI doet |
+| `server/` | API | Node 22 + Express + TypeScript, **of** Python als de app iets met AI doet |
 | `database/` | Database | PostgreSQL 16 (alpine), schema ingebakken in een eigen image |
 
 ## Frontend (`client/`)
@@ -29,7 +29,9 @@ Elke app bestaat uit drie onderdelen, elk in een eigen map met een eigen Dockerf
 agents). Anders Node.
 
 ### Node (standaard)
-- Node 20, Express, TypeScript, `pg` voor Postgres. Geen ORM; gewone SQL.
+- Node 22 (LTS), Express, TypeScript, `pg` voor Postgres. Geen ORM; gewone SQL.
+  Gebruik in CI, Dockerfiles en lokaal dezelfde major-versie. `node --test` met een glob-patroon werkt pas vanaf Node 21;
+  op een oudere Node vindt CI dan geen tests.
 - Build met `tsc` naar `dist/`, start met `node dist/index.js`.
 - Tests met de ingebouwde `node --test`.
 

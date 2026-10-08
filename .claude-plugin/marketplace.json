@@ -12,7 +12,7 @@
       "name": "shelly-fundamentals",
       "source": "./plugins/shelly-fundamentals",
       "description": "Skills en templates voor React + Postgres (+ Node of Python) apps achter Traefik op de Shelly NAS, met release-please en de shared-workflows.",
-      "version": "0.2.1"
+      "version": "0.2.2"
     }
   ]
 }
