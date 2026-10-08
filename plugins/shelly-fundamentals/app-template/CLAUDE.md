@@ -1,7 +1,7 @@
 # __APP__
 
-Deze app volgt de shelly-nas standaarden uit de plugin **`shelly-stack@shelly-nas`**
-(repo `shelly-nas/shelly-stack`). Gebruik de skills daaruit: `stack-voorkeuren`, `docker-traefik`,
+Deze app volgt de shelly-nas standaarden uit de plugin **`shelly-fundamentals@shelly-nas`**
+(repo `shelly-nas/shelly-fundamentals`). Gebruik de skills daaruit: `stack-voorkeuren`, `docker-traefik`,
 `release-deploy`, `database-migraties`, `conventional-commits` en `design-richtlijnen`.
 
 Is de plugin niet geladen, dan gelden in elk geval deze regels:

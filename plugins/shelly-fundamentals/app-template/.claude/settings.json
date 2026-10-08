@@ -3,11 +3,11 @@
     "shelly-nas": {
       "source": {
         "source": "github",
-        "repo": "shelly-nas/shelly-stack"
+        "repo": "shelly-nas/shelly-fundamentals"
       }
     }
   },
   "enabledPlugins": {
-    "shelly-stack@shelly-nas": true
+    "shelly-fundamentals@shelly-nas": true
   }
 }
