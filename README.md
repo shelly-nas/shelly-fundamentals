@@ -22,7 +22,7 @@ plugins/shelly-fundamentals/
 │   │   └── templates/
 │   ├── database-migraties/            init.sql, seed, genummerde migraties
 │   ├── conventional-commits/          commitformaat dat de versie bepaalt
-│   └── design-richtlijnen/            kleuren, Reddit Mono, MUI-thema, tokens.css
+│   └── design-richtlijnen/            Web App Template: tokens, MUI-thema, componenten, patronen
 ├── commands/nieuwe-app.md             /nieuwe-app: zet een complete app op
 └── app-template/                      CLAUDE.md en .claude/settings.json voor app-repo's
 ```
@@ -58,5 +58,5 @@ Pas een skill of template aan, verhoog `version` in `plugins/shelly-fundamentals
 en in `.claude-plugin/marketplace.json`, en push. Haal de wijziging lokaal binnen met
 `/plugin marketplace update shelly-nas`.
 
-Bron van de huidige standaarden: `shelly-nas/FinanceApp` (compose, workflows, thema) en
+Bron van de huidige standaarden: `shelly-nas/FinanceApp` (compose, workflows), het Web App Template uit Claude Design (design) en
 `shelly-nas/shared-workflows`.

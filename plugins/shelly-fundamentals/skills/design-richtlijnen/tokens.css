@@ -1,91 +1,139 @@
-/* shelly-nas design tokens - mirror of theme.ts for use outside MUI. */
-@import url("https://fonts.googleapis.com/css2?family=Reddit+Mono:wght@400;700&display=swap");
+/* shelly-nas design tokens - source: Web App Template (reference/web-app-template.html).
+ *
+ * Components read roles (--primary, --surface, --text-muted), never hexes.
+ * Swapping theme changes the values, never the markup.
+ *
+ * Font: Figtree 400/500/600/700. In an app, self-host it with
+ *   npm install @fontsource/figtree
+ *   import "@fontsource/figtree/400.css"; ... 500, 600, 700
+ */
 
 :root {
-  --font-family: "Reddit Mono", monospace;
-  --font-size: 12px;
-  --radius: 5px;
+  /* Type */
+  --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --primary-100: #d0fcf4;
-  --primary-200: #a0f9e9;
-  --primary-300: #71f5de;
-  --primary-400: #41f2d3;
-  --primary-500: #12efc8;
-  --primary-600: #0ebfa0;
-  --primary-700: #0b8f78;
-  --primary-800: #076050;
-  --primary-900: #043028;
+  /* Spacing - everything is a multiple of 4 */
+  --space-1: 4px;   /* icon <-> label */
+  --space-2: 8px;   /* title <-> subtext */
+  --space-3: 12px;  /* compact lists */
+  --space-4: 16px;  /* items in a group */
+  --space-6: 24px;  /* card padding, gutters */
+  --space-8: 32px;  /* between groups, app content padding */
+  --space-12: 48px; /* between page sections */
+  --space-16: 64px; /* page top padding */
 
-  --secondary-100: #fcf0dd;
-  --secondary-200: #fae1bb;
-  --secondary-300: #f7d299;
-  --secondary-400: #f5c377;
-  --secondary-500: #f2b455;
-  --secondary-600: #c29044;
-  --secondary-700: #916c33;
-  --secondary-800: #614822;
-  --secondary-900: #302411;
+  /* Radius */
+  --radius-sm: 6px;     /* small buttons, chips, tags */
+  --radius-md: 8px;     /* buttons, inputs, nav items, alerts */
+  --radius-lg: 12px;    /* cards, dialogs, toasts */
+  --radius-full: 999px; /* badges, toggles, avatars */
 
-  --grey-100: #f0f0f3;
-  --grey-200: #e1e2e7;
-  --grey-300: #d1d3da;
-  --grey-400: #c2c5ce;
-  --grey-500: #b3b6c2;
-  --grey-600: #8f929b;
-  --grey-700: #6b6d74;
-  --grey-800: #48494e;
-  --grey-900: #242427;
+  /* Motion */
+  --duration: .15s;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
 
-  --bg: #fbfbfb;
-  --surface: #ffffff;
-  --text: var(--grey-800);
-  --text-muted: var(--grey-600);
-  --border: var(--grey-200);
-  --primary: var(--primary-600);
-  --positive: var(--primary-600);
-  --negative: #e35335;
+  /* Primary ramp (blue). 600 = action, 500 = focus ring, 700 = hover, 800 = pressed.
+     To rebrand, replace this ramp with another hue at the same lightness steps;
+     the semantic colors stay. */
+  --blue-50: #EEF4FF;
+  --blue-100: #DCE7FE;
+  --blue-200: #B9CFFD;
+  --blue-300: #8AAEF9;
+  --blue-400: #5A88F2;
+  --blue-500: #2F64E0;
+  --blue-600: #1F4FC4;
+  --blue-700: #1B3F9C;
+  --blue-800: #1A3477;
+  --blue-900: #142552;
+
+  /* Neutral ramp (slightly cool) */
+  --grey-0: #FFFFFF;   /* surface */
+  --grey-25: #F8F9FB;  /* background */
+  --grey-50: #F2F4F7;  /* subtle fill */
+  --grey-100: #E6E9EF; /* disabled fill */
+  --grey-200: #C9D0DA; /* border strong */
+  --grey-300: #B4BCC8;
+  --grey-400: #8A93A3; /* disabled text */
+  --grey-500: #5F6878; /* muted text */
+  --grey-700: #343B48; /* body text */
+  --grey-900: #12161C; /* headings */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --grey-100: #e6e7ea;
-    --grey-200: #c9cbd1;
-    --grey-300: #a7aab3;
-    --grey-400: #878b95;
-    --grey-500: #6b6f79;
-    --grey-600: #565a63;
-    --grey-700: #3f434b;
-    --grey-800: #2b2e34;
-    --grey-900: #191b1f;
-
-    --bg: #15171b;
-    --surface: #1e2126;
-    --text: var(--grey-100);
-    --text-muted: var(--grey-300);
-    --border: var(--grey-700);
-    --primary: var(--primary-500);
-    --positive: var(--primary-400);
-    --negative: #ff7a5e;
-  }
+/* Light theme (default) */
+:root,
+.theme-light {
+  --bg: #F8F9FB;
+  --surface: #FFFFFF;
+  --surface-2: #F2F4F7;
+  --surface-3: #E6E9EF;
+  --border: #E1E5EB;
+  --border-strong: #C9D0DA;
+  --text: #12161C;
+  --text-body: #343B48;
+  --text-muted: #5F6878;
+  --text-disabled: #8A93A3;
+  --primary: #1F4FC4;
+  --primary-hover: #1B3F9C;
+  --primary-active: #1A3477;
+  --primary-soft: #EEF4FF;
+  --primary-soft-2: #DCE7FE;
+  --on-primary: #FFFFFF;
+  --focus: #2F64E0;
+  --success: #1A7F4B;
+  --success-soft: #E7F6EE;
+  --warning: #9A5200;      /* text color; the warning fill hue is #F5B83D */
+  --warning-soft: #FFF4DB;
+  --error: #C8322B;
+  --error-soft: #FDECEB;
+  --star: #D98E04;
+  --shadow-1: 0 1px 2px rgba(18,22,28,.06), 0 1px 3px rgba(18,22,28,.08); /* cards */
+  --shadow-2: 0 8px 24px rgba(18,22,28,.12);                              /* menus, toasts, hover */
+  color-scheme: light;
 }
 
-:root[data-theme="dark"] {
-  --grey-100: #e6e7ea;
-  --grey-200: #c9cbd1;
-  --grey-300: #a7aab3;
-  --grey-400: #878b95;
-  --grey-500: #6b6f79;
-  --grey-600: #565a63;
-  --grey-700: #3f434b;
-  --grey-800: #2b2e34;
-  --grey-900: #191b1f;
-
-  --bg: #15171b;
-  --surface: #1e2126;
-  --text: var(--grey-100);
-  --text-muted: var(--grey-300);
-  --border: var(--grey-700);
-  --primary: var(--primary-500);
-  --positive: var(--primary-400);
-  --negative: #ff7a5e;
+/* Dark theme: elevation comes from lighter surfaces, not shadows.
+   Accents are desaturated and lightened to avoid glare. */
+.theme-dark {
+  --bg: #0F1217;
+  --surface: #171B22;   /* cards */
+  --surface-2: #1F242D; /* menus */
+  --surface-3: #282E39; /* popovers, toasts */
+  --border: #2A303B;
+  --border-strong: #3A4250;
+  --text: #EEF0F4;
+  --text-body: #C9CFD9;
+  --text-muted: #9AA3B2;
+  --text-disabled: #646D7C;
+  --primary: #7EA2F0;
+  --primary-hover: #98B5F4;
+  --primary-active: #B1C7F7;
+  --primary-soft: #1C2742;
+  --primary-soft-2: #24335A;
+  --on-primary: #0F1217;
+  --focus: #98B5F4;
+  --success: #5BC48A;
+  --success-soft: #14291E;
+  --warning: #E9B85A;
+  --warning-soft: #2E2412;
+  --error: #F0817A;
+  --error-soft: #33191A;
+  --star: #E9B85A;
+  --shadow-1: none;
+  --shadow-2: none;
+  color-scheme: dark;
 }
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-body);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p { margin: 0; }
+a:not([class]) { color: var(--primary); }
+a:not([class]):hover { color: var(--primary-hover); }

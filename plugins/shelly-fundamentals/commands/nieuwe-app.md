@@ -32,13 +32,13 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 | `skills/release-deploy/templates/ci.yml` | `.github/workflows/ci.yml` (bij Python: de server-stappen vervangen, zie `release-deploy`) |
 | `skills/release-deploy/templates/release-please-config.json` | `release-please-config.json` (bij Python: de `extra-files`-regel voor `server/package.json` weghalen) |
 | `skills/release-deploy/templates/.release-please-manifest.json` | `.release-please-manifest.json` |
-| `skills/design-richtlijnen/theme.ts` + `expanded-theme.ts` | `client/src/` |
+| `skills/design-richtlijnen/theme.ts` | `client/src/theme.ts` |
 | `app-template/CLAUDE.md` | `CLAUDE.md` (`__BACKEND__` = "Node 20 + Express + TypeScript" of "Python 3.12 + FastAPI") |
 | `app-template/.claude/settings.json` | `.claude/settings.json` |
 
 Bouw daarna een minimale, werkende basis:
-- `client/`: Vite + React + TypeScript + MUI met het thema, light/dark-wissel, één startpagina die
-  `/api/health` aanroept, en Vitest met één test. Laad Reddit Mono in `index.html`.
+- `client/`: Vite + React + TypeScript + MUI met het thema, light/dark-wissel (systeemvoorkeur + keuze in localStorage), de app-shell uit `design-richtlijnen/patterns.md`, één startpagina die
+  `/api/health` aanroept, en Vitest met één test. Figtree via `@fontsource/figtree` (400/500/600/700).
 - `server/`: `GET /api/health` (geeft `{ status: "ok", version }`), databaseverbinding via de
   `DB_*`-variabelen, een migratierunner (`runMigrations`, zie `database-migraties`) die vóór het luisteren draait,
   een lege `migrations/` met een README, en één test.

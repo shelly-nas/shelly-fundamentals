@@ -64,4 +64,4 @@ agents). Anders Node.
 - `release-deploy`: release-please en de GitHub Actions-workflows
 - `database-migraties`: wijzigingen aan het schema
 - `conventional-commits`: commitberichten
-- `design-richtlijnen`: kleuren, typografie en het MUI-thema
+- `design-richtlijnen`: huisstijl (Web App Template), componenten, schermpatronen en het MUI-thema
