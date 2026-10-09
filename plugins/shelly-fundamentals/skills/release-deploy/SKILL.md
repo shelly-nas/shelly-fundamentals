@@ -37,7 +37,8 @@ Elke app heeft **één** acc-omgeving naast productie: `__SUBDOMAIN__-acc.shelly
 in een eigen map (`/volume1/docker/__APP__-acc`), met eigen containers (`__APP__-acc-*`),
 eigen Traefik-routers (`__SUBDOMAIN__-acc*`) en een eigen database.
 
-- **Wanneer:** `acc.yml` draait bij het openen van een PR naar `main` en bij elke push daarop.
+- **Wanneer:** `acc.yml` deployt bij het openen van een PR naar `main` en bij elke push daarop, en
+  breekt acc af als de PR sluit (zie *Afbreken*).
   Er is één acc, dus de laatst gepushte PR staat erop (`concurrency: acc-deploy`). Met *Run workflow*
   zet je een willekeurige branch terug. Release-PR's en PR's van forks gaan niet naar acc.
 - **Images:** dezelfde Dockerfiles als productie, getagd `acc-<commit>`. Nooit `latest` of een versienummer.
@@ -49,12 +50,18 @@ eigen Traefik-routers (`__SUBDOMAIN__-acc*`) en een eigen database.
 - **Hostnaam:** `<subdomein>-acc` en niet `acc.<subdomein>`. Zo valt acc onder dezelfde wildcard-DNS
   `*.shelly-nas.nl` als productie, zonder extra DNS-regels per app.
 - **Goedkeuren:** GitHub laat je je eigen PR niet goedkeuren. Bekijken op acc en dan mergen is de goedkeuring.
-- **Afbreken:** acc gaat pas weg als de wijziging erop **in productie staat**. `deploy-production.yml` krijgt
-  daarvoor `acc_directory`. Na de prod-deploy leest hij de commit uit de `acc-<commit>`-tag van de
-  draaiende acc-containers. Zit die commit in de gedeployde geschiedenis (merge commit), of zit een
-  gemergde PR met die commit erin (squash of rebase)? Dan worden de acc-containers, -netwerken,
-  -volumes en de hele acc-map verwijderd. Staat er een PR op acc die nog niet gereleased is, dan blijft
-  acc staan. De volgende acc-deploy maakt alles opnieuw aan.
+- **Afbreken:** acc gaat weg **zodra de PR erop gemerged of gesloten is**. `acc.yml` draait daarvoor ook
+  bij `pull_request: closed` en roept dan `shared-workflows/teardown-acceptance.yml` aan met de
+  head-commit van de PR. Die leest de commit uit de `acc-<commit>`-tag van de draaiende acc-containers.
+  Is dat de commit van de gesloten PR? Dan worden de acc-containers, -netwerken, -volumes, de hele
+  acc-map en de ongebruikte images verwijderd. Staat er inmiddels een andere PR (of een met de hand
+  gezette branch) op acc, dan blijft acc staan. Een teardown breekt een lopende acc-deploy niet af:
+  `cancel-in-progress` staat uit voor `closed`, dus hij wacht zijn beurt af.
+  Tussen merge en release staat de wijziging dus nergens meer op acc; de release zelf bekijk je op productie.
+  **Vangnet:** `deploy-production.yml` krijgt nog steeds `acc_directory`. Na de prod-deploy breekt die
+  acc af als de commit erop in de gedeployde geschiedenis zit (merge commit), of als een gemergde PR
+  met die commit erin zit (squash of rebase). Dat vangt een branch die je met *Run workflow* op acc
+  hebt gezet. De volgende acc-deploy maakt alles opnieuw aan.
 
 `docker-compose.acc.yml` is een kopie van `docker-compose.prod.yml` waarin alleen de namen en de host
 verschillen. Een wijziging aan de prod-compose (bijvoorbeeld een nieuwe env-variabele) doe je in beide.
@@ -85,7 +92,7 @@ beschrijft ze volledig. In het kort:
 **`deploy-production.yml`**
 - inputs: `registry`, `deploy_directory` (altijd `/volume1/docker/__APP__`), `compose_file`
   (`docker-compose.prod.yml`), `image_tag`, `acc_directory` (altijd `/volume1/docker/__APP__-acc`,
-  zie *Afbreken* hierboven), plus de optionele `runner`, `health_check_delay`, `prune_images` en `prune_age`
+  het vangnet uit *Afbreken* hierboven), plus de optionele `runner`, `health_check_delay`, `prune_images` en `prune_age`
 - secrets: `registry_username`, `registry_password`, `env_file_content` (regels in de vorm `KEY=VALUE`, worden de `.env` op de NAS)
 
 **`deploy-acceptance.yml`**
@@ -94,16 +101,22 @@ beschrijft ze volledig. In het kort:
   (standaard `database/seed-demo.sql`), plus de optionele `db_service`, `runner` en `health_check_delay`
 - secrets: dezelfde als `deploy-production.yml`
 
+**`teardown-acceptance.yml`**: breekt acc af als de PR erop sluit (zie *Afbreken*).
+- inputs: `acc_directory` (altijd `/volume1/docker/__APP__-acc`, moet op `-acc` eindigen),
+  `commit` (`github.event.pull_request.head.sha`), plus de optionele `runner`, `prune_images` en `prune_age`
+- geen secrets
+
 **`ci-node-postgres.yml`**: de CI hieronder, voor een Node-backend.
 - inputs: `db_user`, `db_name`, `seed_check_table` (tabel waarvan het aantal rijen gelijk moet blijven
   als de seed opnieuw draait), `migrate_command` (draait `runMigrations()`), plus de optionele
   `node_version`, `typecheck_projects`, `client_directory`, `server_directory`, `init_sql`, `seed_sql`
   en `migrations_directory`
 
-`build-push-image`, `deploy-production` en `deploy-acceptance` draaien op de self-hosted runner **`shelly`** op de NAS.
+`build-push-image`, `deploy-production`, `deploy-acceptance` en `teardown-acceptance` draaien op de self-hosted runner **`shelly`** op de NAS.
 Release-please, CI en de acc-check van `deploy-production.yml` draaien op `ubuntu-latest`.
 
-**Opschonen.** `deploy-production.yml` en `deploy-acceptance.yml` ruimen na elke run de NAS op, ook als de deploy mislukt:
+**Opschonen.** `deploy-production.yml` en `deploy-acceptance.yml` ruimen na elke run de NAS op, ook als de deploy mislukt
+(`teardown-acceptance.yml` doet hetzelfde na een teardown):
 images die geen enkele container gebruikt, losse anonieme volumes en losse build-cache. Images van
 draaiende **en** gestopte containers blijven staan, en named volumes worden nooit geprunet. Alles wat
 weg is, staat nog in de registry. Een rollback werkt dus gewoon. De databases staan in bind mounts
