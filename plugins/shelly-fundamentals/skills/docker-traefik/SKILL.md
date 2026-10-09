@@ -1,11 +1,11 @@
 ---
 name: docker-traefik
-description: Regels en templates voor docker-compose (lokaal en productie), Dockerfiles, nginx en Traefik-labels van shelly-nas apps. Gebruik bij het dockeriseren van een app, het schrijven of aanpassen van docker-compose.yml / docker-compose.prod.yml of een Dockerfile, healthchecks, volumes, of het publiceren van een app op een *.shelly-nas.nl domein.
+description: Regels en templates voor docker-compose (lokaal, acceptatie en productie), Dockerfiles, nginx en Traefik-labels van shelly-nas apps. Gebruik bij het dockeriseren van een app, het schrijven of aanpassen van docker-compose.yml / docker-compose.prod.yml of een Dockerfile, healthchecks, volumes, of het publiceren van een app op een *.shelly-nas.nl domein.
 ---
 
 # Docker en Traefik
 
-Elke app heeft **twee** compose-bestanden met verschillende doelen. Begin altijd vanuit de
+Elke app heeft **drie** compose-bestanden met verschillende doelen: lokaal, productie en acceptatie (acc). Begin altijd vanuit de
 templates in `templates/` in deze skillmap en vervang de placeholders:
 
 | Placeholder | Betekenis | Voorbeeld |
@@ -18,6 +18,7 @@ templates in `templates/` in deze skillmap en vervang de placeholders:
 |---|---|
 | `templates/docker-compose.yml` | `docker-compose.yml` |
 | `templates/docker-compose.prod.yml` | `docker-compose.prod.yml` |
+| `templates/docker-compose.acc.yml` | `docker-compose.acc.yml` |
 | `templates/client/Dockerfile` + `nginx.conf` | `client/` |
 | `templates/server-node/Dockerfile` | `server/` (Node-backend) |
 | `templates/server-python/Dockerfile` | `server/` (Python/AI-backend) |
@@ -56,6 +57,17 @@ De deployworkflow kopieert **alleen dit bestand** (als `docker-compose.yaml`) en
   runtime-commando dat al in het image zit (`node -e fetch(...)` of `python -c urllib...`). Installeer geen curl alleen daarvoor.
 - **Geen `ports:` in productie.** Alleen Traefik praat met de containers.
 
+## Acceptatie: `docker-compose.acc.yml`
+
+Een kopie van `docker-compose.prod.yml` waarin **alleen** dit verschilt:
+- `container_name: __APP__-acc-<service>`
+- de routers en services `__SUBDOMAIN__-acc` en `__SUBDOMAIN__-acc-api`
+- de host `__SUBDOMAIN__-acc.shelly-nas.nl`
+
+De rest (images, healthchecks, netwerken, `./data/postgres`) is gelijk. De map op de NAS is
+`/volume1/docker/__APP__-acc`, dus het compose-project en de data staan los van productie.
+Houd beide bestanden gelijk. De flow en de database staan in de skill `release-deploy`.
+
 ## Traefik
 
 - Traefik draait al op de NAS. Apps sluiten aan op het **externe netwerk `shelly-network`**.
@@ -64,7 +76,10 @@ De deployworkflow kopieert **alleen dit bestand** (als `docker-compose.yaml`) en
 - Twee routers per app:
   - `__SUBDOMAIN__-api`: `Host(...) && PathPrefix(`/api`)` → server, poort 3000
   - `__SUBDOMAIN__`: `Host(...)` → client (nginx), poort 80
-- Router- en servicenamen moeten uniek zijn over **alle** apps op de NAS. Gebruik daarom altijd het subdomein als prefix.
+- Router- en servicenamen moeten uniek zijn over **alle** apps op de NAS, ook acc. Gebruik daarom altijd het subdomein als prefix.
+- **`/api` loopt altijd via de Traefik-router naar de server, nooit via nginx.** Prod en acc hebben
+  allebei een service `server` op `shelly-network`. Als de client-nginx `server` opzoekt, kan hij dus de
+  verkeerde stack treffen. De `/api`-proxy in `nginx.conf` is alleen voor lokaal gebruik.
 - Labels altijd als lijst van strings tussen dubbele quotes, met backticks rond de hostnaam.
 
 ## Client-image

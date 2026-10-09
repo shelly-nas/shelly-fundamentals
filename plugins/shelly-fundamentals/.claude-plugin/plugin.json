@@ -1,7 +1,7 @@
 {
   "name": "shelly-fundamentals",
   "description": "Skills en templates voor React + Postgres (+ Node of Python) apps achter Traefik op de Shelly NAS, met release-please en de shared-workflows.",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "author": {
     "name": "Jelle van der Graaf"
   },

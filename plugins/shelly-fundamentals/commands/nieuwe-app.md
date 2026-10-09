@@ -23,12 +23,14 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 |---|---|
 | `skills/docker-traefik/templates/docker-compose.yml` | `docker-compose.yml` |
 | `skills/docker-traefik/templates/docker-compose.prod.yml` | `docker-compose.prod.yml` (bij Python: de Python-healthcheck aanzetten en `NODE_ENV` weghalen) |
+| `skills/docker-traefik/templates/docker-compose.acc.yml` | `docker-compose.acc.yml` (zelfde aanpassingen als prod) |
 | `skills/docker-traefik/templates/.env.example` | `.env.example` |
 | `skills/docker-traefik/templates/.gitignore` | `.gitignore` |
 | `skills/docker-traefik/templates/client/*` | `client/Dockerfile`, `client/nginx.conf` |
 | `skills/docker-traefik/templates/server-node/Dockerfile` of `server-python/Dockerfile` | `server/Dockerfile` |
 | `skills/docker-traefik/templates/database/Dockerfile` | `database/Dockerfile` |
 | `skills/release-deploy/templates/deploy.yml` | `.github/workflows/deploy.yml` |
+| `skills/release-deploy/templates/acc.yml` | `.github/workflows/acc.yml` |
 | `skills/release-deploy/templates/ci.yml` | `.github/workflows/ci.yml` (bij Python: de server-stappen vervangen, zie `release-deploy`) |
 | `skills/release-deploy/templates/release-please-config.json` | `release-please-config.json` (bij Python: de `extra-files`-regel voor `server/package.json` weghalen) |
 | `skills/release-deploy/templates/.release-please-manifest.json` | `.release-please-manifest.json` |
@@ -45,13 +47,13 @@ Bouw daarna een minimale, werkende basis:
 - `database/`: `init.sql` (met een eerste tabel als de app er al een nodig heeft), een idempotente
   `seed.sql` en een `seed-demo.sql`.
 - `README.md`: wat de app doet, `cp .env.example .env && docker compose up --build`, en de URL's
-  `http://localhost:5173` en `https://__SUBDOMAIN__.shelly-nas.nl`.
+  `http://localhost:5173`, `http://__SUBDOMAIN__-acc.shelly-nas.nl` (acc) en `http://__SUBDOMAIN__.shelly-nas.nl`.
 
 Gebruik `npm install` om de lockfiles te genereren. Schrijf ze niet met de hand.
 
 ## 3. Controleren
 
-- `docker compose config` op beide compose-bestanden (met een tijdelijke `.env` waarin `DB_PASSWORD` en `IMAGE_TAG` staan).
+- `docker compose config` op alle drie de compose-bestanden (met een tijdelijke `.env` waarin `DB_PASSWORD` en `IMAGE_TAG` staan).
 - Als Docker beschikbaar is: `docker compose up --build -d`, wacht tot alles healthy is, controleer
   `curl localhost:5173/api/health`, en ruim daarna op met `docker compose down -v`.
 - Zoek met grep naar overgebleven `__APP__`, `__SUBDOMAIN__`, `__DB_USER__`, `__DB_NAME__` en `__BACKEND__`.
@@ -63,4 +65,6 @@ Commit als `feat: scaffold __APP__`. Geef de gebruiker daarna deze checklist voo
    `DB_USER`, `DB_NAME`; secrets `REGISTRY_PASSWORD` en `DB_PASSWORD` (plus bijvoorbeeld `ANTHROPIC_API_KEY` voor AI-apps).
 2. *Settings → Actions → General*: "Allow GitHub Actions to create and approve pull requests" aanzetten.
 3. Op de NAS: `mkdir -p /volume1/docker/__APP__/data/postgres && sudo chown -R 70:70 /volume1/docker/__APP__/data/postgres`.
-4. De eerste release-PR van release-please mergen. Dat deployt `__SUBDOMAIN__.shelly-nas.nl`.
+4. Werk voortaan via PR's: elke PR komt eerst op `__SUBDOMAIN__-acc.shelly-nas.nl`. De map
+   `/volume1/docker/__APP__-acc` maakt de workflow zelf aan.
+5. De eerste release-PR van release-please mergen. Dat deployt `__SUBDOMAIN__.shelly-nas.nl`.
