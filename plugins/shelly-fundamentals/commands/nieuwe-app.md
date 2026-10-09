@@ -31,7 +31,7 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 | `skills/docker-traefik/templates/database/Dockerfile` | `database/Dockerfile` |
 | `skills/release-deploy/templates/deploy.yml` | `.github/workflows/deploy.yml` |
 | `skills/release-deploy/templates/acc.yml` | `.github/workflows/acc.yml` |
-| `skills/release-deploy/templates/ci.yml` | `.github/workflows/ci.yml` (bij Python: de server-stappen vervangen, zie `release-deploy`) |
+| `skills/release-deploy/templates/ci.yml` | `.github/workflows/ci.yml` (Node; bij Python `ci-python.yml` met de server-stappen vervangen, zie `release-deploy`) |
 | `skills/release-deploy/templates/release-please-config.json` | `release-please-config.json` (bij Python: de `extra-files`-regel voor `server/package.json` weghalen) |
 | `skills/release-deploy/templates/.release-please-manifest.json` | `.release-please-manifest.json` |
 | `skills/design-richtlijnen/theme.ts` | `client/src/theme.ts` |
