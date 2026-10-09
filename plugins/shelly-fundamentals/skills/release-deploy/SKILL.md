@@ -16,14 +16,20 @@ description: Release-, build- en deploypijplijn van shelly-nas apps met release-
 3. Pas daarna bouwen de images (getagd met `x.y.z` en `latest`) en volgt de deploy met `IMAGE_TAG=x.y.z`.
 
 Een gewone merge naar `main` is dus altijd veilig.
-**Rollback:** de images van elke versie blijven in de registry staan, dus er hoeft niets opnieuw
-gebouwd te worden. Let op: `deploy.yml` **verwijdert de `.env` na elke deploy**, omdat er geheimen in staan.
-Maak daarom op de NAS in `/volume1/docker/__APP__` eerst een `.env` aan met dezelfde waarden als
-`env_file_content`, met `IMAGE_TAG` op de eerdere versie. Draai dan `docker compose up -d` en
-verwijder de `.env` daarna weer. Migraties worden daarbij **niet** teruggedraaid (zie `database-migraties`).
+**Opnieuw deployen of terugrollen:** *Actions → deploy.yml → Run workflow* met `version` = een eerder
+uitgebrachte versie. Kies als ref de tag `vX.Y.Z`, of `main` als `main` gelijk is aan die release.
+De workflow bouwt en deployt die versie zonder dat release-please een nieuwe release maakt. Gebruik dit
+ook als de build van een release is mislukt: een re-run van de mislukte jobs gebruikt de oude versie
+van de gedeelde workflows, dus een fix daarin telt dan niet mee.
 
-Draaiende containers houden hun environment, en dankzij `restart: always` komen ze na een reboot
-vanzelf terug. Alleen een handmatige `docker compose up` heeft de `.env` nodig.
+Migraties worden bij een rollback **niet** teruggedraaid (zie `database-migraties`). Dat gaat goed
+zolang ze additief zijn. `deploy.yml` verwijdert de `.env` op de NAS na elke deploy. Draaiende
+containers houden hun environment, en dankzij `restart: always` komen ze na een reboot vanzelf terug.
+Alleen een handmatige `docker compose up` op de NAS heeft de `.env` nodig.
+
+**De eerste release van een bestaande app:** controleer of `init.sql` sinds de database in productie is
+aangemaakt veranderd is zonder migratie. Acc en CI bouwen hun database uit `init.sql` en zien dat
+niet. Test een nieuwe migratie tegen een database met het vorige schema.
 
 ## Acceptatie (acc)
 
