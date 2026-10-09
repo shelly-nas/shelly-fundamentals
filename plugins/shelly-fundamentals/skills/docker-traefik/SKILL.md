@@ -72,6 +72,9 @@ Houd beide bestanden gelijk. De flow en de database staan in de skill `release-d
 
 - Traefik draait al op de NAS. Apps sluiten aan op het **externe netwerk `shelly-network`**.
   Services die Traefik moet bereiken staan in `shelly-network` én `default`; de db zit alleen in `default`.
+- **Zet altijd `traefik.docker.network=shelly-network`** op elke service met Traefik-labels. Die services
+  zitten in twee netwerken. Zonder dit label kiest Traefik soms het IP-adres in het `default`-netwerk
+  van de stack, dat hij niet kan bereiken, en geeft hij **504 Gateway Timeout**.
 - Entrypoint is **`web`**. Domein: `__SUBDOMAIN__.shelly-nas.nl`.
 - Twee routers per app:
   - `__SUBDOMAIN__-api`: `Host(...) && PathPrefix(`/api`)` → server, poort 3000

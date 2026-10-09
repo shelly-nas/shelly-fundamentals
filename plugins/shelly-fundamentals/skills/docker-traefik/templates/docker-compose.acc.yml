@@ -74,6 +74,9 @@ services:
       - default
     labels:
       - "traefik.enable=true"
+      # Two networks: tell Traefik which one it can reach, or it may pick
+      # the stack's default network and answer 504 Gateway Timeout.
+      - "traefik.docker.network=shelly-network"
       - "traefik.http.routers.__SUBDOMAIN__-acc-api.rule=Host(`__SUBDOMAIN__-acc.shelly-nas.nl`) && PathPrefix(`/api`)"
       - "traefik.http.routers.__SUBDOMAIN__-acc-api.entrypoints=web"
       - "traefik.http.services.__SUBDOMAIN__-acc-api.loadbalancer.server.port=3000"
@@ -91,6 +94,9 @@ services:
       - default
     labels:
       - "traefik.enable=true"
+      # Two networks: tell Traefik which one it can reach, or it may pick
+      # the stack's default network and answer 504 Gateway Timeout.
+      - "traefik.docker.network=shelly-network"
       - "traefik.http.routers.__SUBDOMAIN__-acc.rule=Host(`__SUBDOMAIN__-acc.shelly-nas.nl`)"
       - "traefik.http.routers.__SUBDOMAIN__-acc.entrypoints=web"
       - "traefik.http.services.__SUBDOMAIN__-acc.loadbalancer.server.port=80"
