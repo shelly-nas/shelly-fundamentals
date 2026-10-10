@@ -17,6 +17,21 @@ een browser voor alle borden). Elke nieuwe app volgt dit, zodat alle apps op de 
 | `components.css` | Referentie-implementatie van alle componenten en states. Dit is de spec voor maten en kleuren; in een MUI-app regelt `theme.ts` dit. |
 | `patterns.md` | Schermpatronen: app-shell, lijst/dashboard, instellingenformulier, mobiele detailpagina, edge cases. **Lees dit bij het bouwen van een nieuw scherm.** |
 
+### Zonder MUI (gewone CSS)
+
+Een app die (nog) geen MUI gebruikt, volgt dezelfde regels met `tokens.css` en `components.css`:
+
+- Kopieer `tokens.css` naar `client/src/tokens.css` en importeer in `main.jsx` in deze volgorde:
+  `@fontsource/figtree/{400,500,600,700}.css`, `tokens.css` en dan de eigen stylesheet.
+  `tokens.css` zet ook de basis van `body` (lettertype, kleur, achtergrond).
+- De eigen stylesheet leest **alleen rollen** (`var(--primary)`, `var(--surface)`, `var(--text-muted)`).
+  Neem maten, states en kleuren over uit `components.css`; de klassennamen van de app mogen blijven.
+- Een bestaande app omzetten: vervang eerst de eigen kleurvariabelen door de rollen (ook waar JSX ze
+  als string doorgeeft, bijvoorbeeld `stroke={`var(${kleur})`}`). Zet daarna dark mode van
+  `@media (prefers-color-scheme)` om naar `.theme-dark`, anders wint de mediaquery van de toggle.
+- **Grafiekkleuren zijn geen UI-rollen.** Houd een gevalideerd reekspalet (`--reeks-1..n`) apart, met
+  een eigen waarde onder `.theme-dark`. Een reeks betekent geen actie of status, dus geen `--primary`.
+
 ## Principes
 
 1. **Kleur heeft een taak, nooit decoratie.** Eén blauwe primaire kleur voor acties, links en focus.
@@ -46,6 +61,11 @@ een browser voor alle borden). Elke nieuwe app volgt dit, zodat alle apps op de 
 
 - **Verplicht.** Volg standaard `prefers-color-scheme` en laat de gebruiker wisselen. Zet de klasse
   `theme-dark` of `theme-light` op `<html>` (of geef de modus door aan `themeSettings(mode)`) en onthoud de keuze in `localStorage`.
+- **Zet de klasse vóór de eerste paint**, met een klein inline `<script>` in de `<head>` van `index.html`
+  (eerst `localStorage`, anders `matchMedia('(prefers-color-scheme: dark)')`). Pas het in React zetten
+  geeft een witte flits bij elke laadbeurt in dark mode. Zonder eigen keuze volgt de app een
+  systeemwissel live (`matchMedia(...).addEventListener('change', ...)`); een klik op de toggle legt de
+  keuze vast. Lees en schrijf `localStorage` altijd in `try/catch`.
 - Diepte komt van **lichtere oppervlakken**, niet van schaduwen: bg `#0F1217` → kaart `#171B22` →
   menu `#1F242D` → popover/toast `#282E39`. In dark mode zijn er geen schaduwen.
 - Accenten zijn gedesatureerd en lichter (primair `#7EA2F0`), om verblinding te voorkomen.

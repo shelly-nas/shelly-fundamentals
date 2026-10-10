@@ -79,6 +79,15 @@ Een kopie van `docker-compose.prod.yml` waarin **alleen** dit verschilt:
 
 De rest (images, healthchecks, netwerken) is gelijk. De map op de NAS is
 `/volume1/docker/__APP__-acc`, dus het compose-project en de data staan los van productie.
+
+**Andere data dan de database** (geüploade bestanden, bijlagen) krijgt in productie net als de
+database een extern volume met een vaste naam (`__APP__-<map>`, ook in `persistent_volumes`). Op acc
+wordt dat een gewoon **named volume** van het project, geen bind mount: `deploy-acceptance.yml` maakt
+alleen `./data/postgres` aan, en een bind mount naar een map die er niet is, maakt Docker zelf aan als
+root. De server (bijvoorbeeld uid 1000) kan daar niet in schrijven en uploads falen. Een nieuw named
+volume neemt de eigenaar uit het image over (`chown` in de Dockerfile), en `teardown-acceptance.yml`
+ruimt de volumes van het project op. Zet de reden als commentaar in `docker-compose.acc.yml`.
+
 Houd beide bestanden gelijk. De flow en de database staan in de skill `release-deploy`.
 
 ## Traefik
