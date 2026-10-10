@@ -64,7 +64,15 @@ Een kopie van `docker-compose.prod.yml` waarin **alleen** dit verschilt:
 - de routers en services `__SUBDOMAIN__-acc` en `__SUBDOMAIN__-acc-api`
 - de host `__SUBDOMAIN__-acc.shelly-nas.nl`
 
-De rest (images, healthchecks, netwerken, `./data/postgres`) is gelijk. De map op de NAS is
+De rest (images, healthchecks, netwerken, `./data/postgres`) is gelijk.
+
+**Uitzondering: andere data dan de database** (geüploade bestanden en bijlagen). In productie is dat een
+bind mount (`./data/<map>`, eigendom van de app-user, bijvoorbeeld uid 1000). Op acc maakt
+`deploy-acceptance.yml` alleen `./data/postgres` aan. Een bind mount naar een map die er niet is, maakt
+Docker zelf aan, en dan is hij van root: de server kan er niet in schrijven en uploads falen. Gebruik op
+acc daarom een **named volume** voor die map. Een nieuw named volume neemt de eigenaar uit het image
+over (`chown` in de Dockerfile), en `teardown-acceptance.yml` ruimt de volumes van het project op.
+Zet de reden als commentaar in `docker-compose.acc.yml`; het is het enige verschil met prod buiten de namen. De map op de NAS is
 `/volume1/docker/__APP__-acc`, dus het compose-project en de data staan los van productie.
 Houd beide bestanden gelijk. De flow en de database staan in de skill `release-deploy`.
 

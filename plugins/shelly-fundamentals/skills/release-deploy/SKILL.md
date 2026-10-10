@@ -79,6 +79,28 @@ verschillen. Een wijziging aan de prod-compose (bijvoorbeeld een nieuwe env-vari
 
 Vervang `__APP__`, `__DB_USER__` en `__DB_NAME__` net als bij `docker-traefik`.
 
+### Afwijkende repo's
+
+**App in een submap** (bijvoorbeeld `app/`, naast andere inhoud in dezelfde repo). Workflows staan
+altijd in `.github/workflows/` in de root van de repo, dus alle paden krijgen de submap erbij:
+- `context: ./app/server` (en `./app/client`, `./app/database`) bij `build-push-image.yml`
+- `compose_file: app/docker-compose.acc.yml` en `demo_seed_file: app/database/seed-demo.sql`:
+  `deploy-acceptance.yml` leest beide relatief aan de root van de checkout
+- `cache-dependency-path` en `working-directory` in de CI
+- een `paths:`-filter (`'app/**'` plus het workflowbestand zelf) op `pull_request` in `acc.yml` en
+  op `push`/`pull_request` in `ci.yml`. Zo gaat een PR die alleen de rest van de repo raakt niet
+  naar acc. Een `closed`-event valt onder hetzelfde filter, en dat klopt: een PR die acc nooit
+  raakte, heeft ook niets af te breken.
+
+**Geen demodata.** Levert `init.sql` (of `seed.sql`) al alles wat acc nodig heeft, zet dan
+`demo_seed_file: ''`. Dan slaat `deploy-acceptance.yml` die stap over. Laat geen leeg bestand achter
+alleen om aan de standaardwaarde te voldoen.
+
+**Teardown en concurrency.** Houd deploy en teardown in **één** groep (`acc-deploy`) zoals in
+`templates/acc.yml`. Een eigen groep per teardown lijkt netter, maar laat hem dan tegelijk met de
+deploy van een andere PR lopen: hij ziet nog de oude containers en haalt de acc-map onder die
+deploy weg.
+
 ## Herbruikbare workflows (`shelly-nas/shared-workflows`)
 
 Gebruik altijd deze workflows. Kopieer hun stappen niet naar de app. De README van die repo
@@ -151,6 +173,27 @@ inputs mee (`templates/ci.yml`). Minimaal:
 - een Postgres-servicecontainer waarop `init.sql` en `seed.sql` worden toegepast, en de seed
   nog een keer (dat moet een no-op zijn)
 - een controle op dubbele migratienummers, en alle migraties twee keer toepassen
+
+**Node-backend in JavaScript, zonder build.** `ci-node-postgres.yml` draait altijd `tsc --noEmit` per
+project in `typecheck_projects` (een lege lijst kan niet: een matrix moet minstens één waarde hebben) en
+`npm run build` in de server. Een JS-server zonder build-script faalt daarop. Schrijf dan een eigen
+`ci.yml` met dezelfde stappen (zie de jobs in `ci-node-postgres.yml`): een clientbuild in plaats van
+de typecheck, en geen serverbuild. Een ESM-server roept zijn migraties aan via een dynamische import,
+bijvoorbeeld:
+
+```yaml
+      - name: Apply pending migrations twice
+        working-directory: server
+        run: |
+          for run in 1 2; do
+            node -e "import('./src/db.js').then(async (db) => { await db.migreer(); await db.pool.end(); }).catch((e) => { console.error(e); process.exit(1); })"
+          done
+```
+
+Gebruik voor de Postgres-service dezelfde major als `database/Dockerfile`, via
+`mirror.gcr.io/library/postgres:<versie>-alpine` (de runners van GitHub lopen tegen de pull-limiet van
+Docker Hub aan). Wordt een JS-backend de norm, maak dan de typecheck en de build optioneel in
+`ci-node-postgres.yml` in plaats van dit per app te kopiëren.
 
 Voor een **Python-backend** is er nog geen gedeelde workflow. Neem `templates/ci-python.yml` en
 vervang daarin de server-stappen door:
