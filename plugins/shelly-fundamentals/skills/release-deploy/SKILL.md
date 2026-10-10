@@ -12,6 +12,10 @@ description: Build- en deploypijplijn van shelly-nas apps: de acceptatieomgeving
 2. **Mergen is releasen.** Elke push naar `main` bouwt de images, getagd met de commit (en `latest`),
    en deployt ze direct naar productie met `IMAGE_TAG=<commit>`.
 3. **Acc gaat weg zodra de PR sluit** (gemerged of niet), en anders na de productiedeploy (vangnet).
+4. **De branch gaat weg na de merge.** Zet in elke repo *Settings → General → Automatically delete
+   head branches* aan, dan verwijdert GitHub de branch zelf. Er blijven dus alleen `main` en de
+   branches van open PR's over. Een gesloten PR die niet gemerged is: verwijder de branch met de hand
+   als je hem niet meer nodig hebt. Een verwijderde branch is terug te halen met *Restore branch* op de PR.
 
 Er is geen release-PR en geen versienummer: wat in productie draait is altijd een commit op `main`,
 en `GET /api/health` meldt die commit (`APP_VERSION`). Merge dus pas als de PR op acc klopt.
