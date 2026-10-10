@@ -18,10 +18,10 @@ plugins/shelly-fundamentals/
 │   ├── stack-voorkeuren/              React/Vite, Node of Python (AI), Postgres, npm
 │   ├── docker-traefik/                compose lokaal + prod, Dockerfiles, nginx, Traefik-labels
 │   │   └── templates/
-│   ├── release-deploy/                release-please, CI, deploy via shared-workflows
+│   ├── release-deploy/                CI, acc per PR, deploy bij merge, productiedata-volume
 │   │   └── templates/
 │   ├── database-migraties/            init.sql, seed, genummerde migraties
-│   ├── conventional-commits/          commitformaat dat de versie bepaalt
+│   ├── conventional-commits/          commitformaat voor main
 │   └── design-richtlijnen/            Web App Template: tokens, MUI-thema, componenten, patronen
 ├── commands/nieuwe-app.md             /nieuwe-app: zet een complete app op
 └── app-template/                      CLAUDE.md en .claude/settings.json voor app-repo's

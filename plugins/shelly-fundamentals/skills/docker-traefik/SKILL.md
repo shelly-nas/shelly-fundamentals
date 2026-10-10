@@ -45,13 +45,24 @@ De deployworkflow kopieert **alleen dit bestand** (als `docker-compose.yaml`) en
 
 - **Geen `build:` en geen bind mounts naar de repo.** Alles komt uit images:
   `${REGISTRY}/__APP__-<service>:${IMAGE_TAG:?...}`.
-- **Pin `IMAGE_TAG` op een versie** en maak hem verplicht (`:?`). Gebruik nooit `latest` in productie:
-  een rollback is dan het aanpassen van één regel, en een herstart haalt niet stilletjes een nieuwere build op.
+- **Pin `IMAGE_TAG` op de commit** en maak hem verplicht (`:?`). Gebruik nooit `latest` in productie:
+  een rollback is dan het deployen van een eerdere commit, en een herstart haalt niet stilletjes een
+  nieuwere build op. Geef hem ook als `APP_VERSION` aan de server, zodat `GET /api/health` hem meldt.
 - **Database-image met ingebakken schema** (`database/Dockerfile`). Een bind mount naar
   `./database/init.sql` bestaat op de host niet: Docker maakt dan een lege map aan en Postgres start zonder schema.
-- **Data via een bind mount op `./data/postgres`**, niet via een named volume. Zo overleeft de data
-  ook `docker compose down -v`. De map moet op de host bestaan en eigendom zijn van uid/gid **70**
-  (de postgres-user in het alpine-image).
+- **Data in een extern Docker-volume met een vaste naam**, `__APP__-db-data`:
+  ```yaml
+  volumes:
+    db_data:
+      external: true
+      name: __APP__-db-data
+  ```
+  Compose maakt een extern volume niet aan en verwijdert het nooit, ook niet met
+  `docker compose down -v`; de opschoonstappen van de shared-workflows laten het ook staan.
+  `deploy.yml` geeft dezelfde naam mee als `persistent_volumes`, en `deploy-production.yml` maakt
+  het volume bij de eerste deploy aan. Elke volgende deploy start op hetzelfde volume met dezelfde
+  data. Weggooien kan alleen bewust: `docker volume rm __APP__-db-data`. Zie `release-deploy` →
+  *Productiedata*.
 - `container_name: __APP__-<service>`, `restart: always` en `TZ: ${TZ:-Europe/Amsterdam}` op elke service.
 - **Healthchecks op db en server.** De server-healthcheck roept `GET /api/health` aan met het
   runtime-commando dat al in het image zit (`node -e fetch(...)` of `python -c urllib...`). Installeer geen curl alleen daarvoor.
@@ -63,17 +74,20 @@ Een kopie van `docker-compose.prod.yml` waarin **alleen** dit verschilt:
 - `container_name: __APP__-acc-<service>`
 - de routers en services `__SUBDOMAIN__-acc` en `__SUBDOMAIN__-acc-api`
 - de host `__SUBDOMAIN__-acc.shelly-nas.nl`
+- de database staat in de bind mount `./data/postgres` in plaats van het externe volume:
+  `deploy-acceptance.yml` maakt die map bij elke deploy leeg, zodat acc altijd vers begint
 
-De rest (images, healthchecks, netwerken, `./data/postgres`) is gelijk.
-
-**Uitzondering: andere data dan de database** (geüploade bestanden en bijlagen). In productie is dat een
-bind mount (`./data/<map>`, eigendom van de app-user, bijvoorbeeld uid 1000). Op acc maakt
-`deploy-acceptance.yml` alleen `./data/postgres` aan. Een bind mount naar een map die er niet is, maakt
-Docker zelf aan, en dan is hij van root: de server kan er niet in schrijven en uploads falen. Gebruik op
-acc daarom een **named volume** voor die map. Een nieuw named volume neemt de eigenaar uit het image
-over (`chown` in de Dockerfile), en `teardown-acceptance.yml` ruimt de volumes van het project op.
-Zet de reden als commentaar in `docker-compose.acc.yml`; het is het enige verschil met prod buiten de namen. De map op de NAS is
+De rest (images, healthchecks, netwerken) is gelijk. De map op de NAS is
 `/volume1/docker/__APP__-acc`, dus het compose-project en de data staan los van productie.
+
+**Andere data dan de database** (geüploade bestanden, bijlagen) krijgt in productie net als de
+database een extern volume met een vaste naam (`__APP__-<map>`, ook in `persistent_volumes`). Op acc
+wordt dat een gewoon **named volume** van het project, geen bind mount: `deploy-acceptance.yml` maakt
+alleen `./data/postgres` aan, en een bind mount naar een map die er niet is, maakt Docker zelf aan als
+root. De server (bijvoorbeeld uid 1000) kan daar niet in schrijven en uploads falen. Een nieuw named
+volume neemt de eigenaar uit het image over (`chown` in de Dockerfile), en `teardown-acceptance.yml`
+ruimt de volumes van het project op. Zet de reden als commentaar in `docker-compose.acc.yml`.
+
 Houd beide bestanden gelijk. De flow en de database staan in de skill `release-deploy`.
 
 ## Traefik

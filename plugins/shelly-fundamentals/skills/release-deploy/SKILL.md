@@ -1,35 +1,53 @@
 ---
 name: release-deploy
-description: Release-, build- en deploypijplijn van shelly-nas apps met release-please, GitHub Actions, de acceptatieomgeving (acc) per PR en de herbruikbare workflows uit shelly-nas/shared-workflows. Gebruik bij het opzetten of aanpassen van .github/workflows (CI, acc, deploy), release-please-config, versiebeheer, rollbacks, GitHub-variabelen en -secrets, of de deploy naar de NAS.
+description: Build- en deploypijplijn van shelly-nas apps: de acceptatieomgeving (acc) per PR, direct naar productie bij een merge naar main, de persistente productiedatabase in een extern Docker-volume en de herbruikbare workflows uit shelly-nas/shared-workflows. Gebruik bij het opzetten of aanpassen van .github/workflows (CI, acc, deploy), rollbacks, GitHub-variabelen en -secrets, of de deploy naar de NAS.
 ---
 
-# Release en deploy
+# Build en deploy
 
 ## De flow
 
-0. **Elke PR naar `main` gaat eerst naar acc**, op `__SUBDOMAIN__-acc.shelly-nas.nl` (zie hieronder).
-   Daar bekijk je de wijziging. Pas daarna merge je.
-1. Elke push naar `main` draait **release-please**. Dat leest de Conventional Commits sinds de
-   laatste tag en houdt een PR **"chore(main): release x.y.z"** bij met de changelog en de
-   opgehoogde versies. Op dat moment wordt nog niets gedeployd.
-2. **Het mergen van die release-PR is de release.** Dat maakt de tag `vx.y.z` en de GitHub Release.
-3. Pas daarna bouwen de images (getagd met `x.y.z` en `latest`) en volgt de deploy met `IMAGE_TAG=x.y.z`.
+1. **Werk op een feature-branch en open een PR naar `main`.** Elke push op die PR wordt gebouwd en
+   gedeployd naar acc, `__SUBDOMAIN__-acc.shelly-nas.nl` (zie hieronder). Daar bekijk je de wijziging.
+2. **Mergen is releasen.** Elke push naar `main` bouwt de images, getagd met de commit (en `latest`),
+   en deployt ze direct naar productie met `IMAGE_TAG=<commit>`.
+3. **Acc gaat weg zodra de PR sluit** (gemerged of niet), en anders na de productiedeploy (vangnet).
 
-Een gewone merge naar `main` is dus altijd veilig.
-**Opnieuw deployen of terugrollen:** *Actions → deploy.yml → Run workflow* met `version` = een eerder
-uitgebrachte versie. Kies als ref de tag `vX.Y.Z`, of `main` als `main` gelijk is aan die release.
-De workflow bouwt en deployt die versie zonder dat release-please een nieuwe release maakt. Gebruik dit
-ook als de build van een release is mislukt: een re-run van de mislukte jobs gebruikt de oude versie
-van de gedeelde workflows, dus een fix daarin telt dan niet mee.
+Er is geen release-PR en geen versienummer: wat in productie draait is altijd een commit op `main`,
+en `GET /api/health` meldt die commit (`APP_VERSION`). Merge dus pas als de PR op acc klopt.
+
+**Opnieuw deployen of terugrollen:** *Actions → deploy.yml → Run workflow*. Kies als ref `main` voor
+een redeploy, of een branch of tag op een eerdere commit voor een rollback (of revert de commit en
+merge die revert: dat is ook een gewone deploy). Een re-run van mislukte jobs gebruikt de oude versie
+van de gedeelde workflows; start na een fix daarin dus een nieuwe run.
 
 Migraties worden bij een rollback **niet** teruggedraaid (zie `database-migraties`). Dat gaat goed
 zolang ze additief zijn. `shared-workflows/deploy-production.yml` verwijdert de `.env` op de NAS na elke deploy. Draaiende
 containers houden hun environment, en dankzij `restart: always` komen ze na een reboot vanzelf terug.
 Alleen een handmatige `docker compose up` op de NAS heeft de `.env` nodig.
 
-**De eerste release van een bestaande app:** controleer of `init.sql` sinds de database in productie is
+**De eerste deploy van een bestaande app:** controleer of `init.sql` sinds de database in productie is
 aangemaakt veranderd is zonder migratie. Acc en CI bouwen hun database uit `init.sql` en zien dat
 niet. Test een nieuwe migratie tegen een database met het vorige schema.
+
+## Productiedata
+
+De productiedatabase staat in een **extern Docker-volume met een vaste naam**, `__APP__-db-data`
+(zie `docker-traefik`). Daardoor:
+
+- maakt de eerste deploy het volume aan (`persistent_volumes` van `deploy-production.yml`), en
+  hergebruikt elke volgende deploy, ook elke push naar `main`, hetzelfde volume met dezelfde data;
+- verwijdert `docker compose down -v` het niet, want compose beheert een extern volume niet;
+- laten de opschoonstappen en de acc-teardown het staan: die verwijderen alleen anonieme volumes
+  en volumes met het label van het acc-project;
+- hangt de naam niet af van de map of de compose-projectnaam. Weggooien is altijd een bewuste
+  `docker volume rm __APP__-db-data`.
+
+Zet dezelfde naam in `docker-compose.prod.yml` (`volumes: db_data: name:`) en in `deploy.yml`
+(`persistent_volumes`). Draaide de app al met een named volume, gebruik dan de naam van **dat**
+volume (`docker volume ls`), dan gaat de bestaande data zonder kopiëren mee.
+
+Acc heeft geen persistent volume: de database daar wordt bij elke deploy opnieuw opgebouwd.
 
 ## Acceptatie (acc)
 
@@ -40,10 +58,11 @@ eigen Traefik-routers (`__SUBDOMAIN__-acc*`) en een eigen database.
 - **Wanneer:** `acc.yml` deployt bij het openen van een PR naar `main` en bij elke push daarop, en
   breekt acc af als de PR sluit (zie *Afbreken*).
   Er is één acc, dus de laatst gepushte PR staat erop (`concurrency: acc-deploy`). Met *Run workflow*
-  zet je een willekeurige branch terug. Release-PR's en PR's van forks gaan niet naar acc.
-- **Images:** dezelfde Dockerfiles als productie, getagd `acc-<commit>`. Nooit `latest` of een versienummer.
+  zet je een willekeurige branch terug. PR's van forks gaan niet naar acc.
+- **Images:** dezelfde Dockerfiles als productie, getagd `acc-<commit>`. Nooit `latest`.
 - **Database:** bij elke deploy volledig opnieuw opgebouwd, uit `init.sql`, `seed.sql` en
-  `database/seed-demo.sql`. **Nooit productiedata op acc.** Wat je op acc invoert, is bij de volgende deploy weg.
+  `database/seed-demo.sql`, in de bind mount `./data/postgres` van de acc-map.
+  **Nooit productiedata op acc.** Wat je op acc invoert, is bij de volgende deploy weg.
   De migraties van de PR draaien daarna op die verse database.
 - **Workflow:** `shared-workflows/deploy-acceptance.yml`. Die weigert elke `deploy_directory` die niet op
   `-acc` eindigt, omdat hij de database in die map leegmaakt.
@@ -57,14 +76,15 @@ eigen Traefik-routers (`__SUBDOMAIN__-acc*`) en een eigen database.
   acc-map en de ongebruikte images verwijderd. Staat er inmiddels een andere PR (of een met de hand
   gezette branch) op acc, dan blijft acc staan. Een teardown breekt een lopende acc-deploy niet af:
   `cancel-in-progress` staat uit voor `closed`, dus hij wacht zijn beurt af.
-  Tussen merge en release staat de wijziging dus nergens meer op acc; de release zelf bekijk je op productie.
-  **Vangnet:** `deploy-production.yml` krijgt nog steeds `acc_directory`. Na de prod-deploy breekt die
+  Na een merge staat de wijziging dus op productie en niet meer op acc.
+  **Vangnet:** `deploy-production.yml` krijgt `acc_directory`. Na de prod-deploy breekt die
   acc af als de commit erop in de gedeployde geschiedenis zit (merge commit), of als een gemergde PR
   met die commit erin zit (squash of rebase). Dat vangt een branch die je met *Run workflow* op acc
   hebt gezet. De volgende acc-deploy maakt alles opnieuw aan.
 
-`docker-compose.acc.yml` is een kopie van `docker-compose.prod.yml` waarin alleen de namen en de host
-verschillen. Een wijziging aan de prod-compose (bijvoorbeeld een nieuwe env-variabele) doe je in beide.
+`docker-compose.acc.yml` is een kopie van `docker-compose.prod.yml` waarin alleen de namen, de host
+en de databaseopslag verschillen. Een wijziging aan de prod-compose (bijvoorbeeld een nieuwe
+env-variabele) doe je in beide.
 
 ## Templates in deze skillmap
 
@@ -74,10 +94,8 @@ verschillen. Een wijziging aan de prod-compose (bijvoorbeeld een nieuwe env-vari
 | `templates/acc.yml` | `.github/workflows/acc.yml` (plus `docker-traefik/templates/docker-compose.acc.yml`) |
 | `templates/ci.yml` | `.github/workflows/ci.yml` (Node-backend; roept `shared-workflows/ci-node-postgres.yml` aan) |
 | `templates/ci-python.yml` | `.github/workflows/ci.yml` bij een Python-backend (zelfstandig; server-stappen vervangen, zie hieronder) |
-| `templates/release-please-config.json` | `release-please-config.json` |
-| `templates/.release-please-manifest.json` | `.release-please-manifest.json` (begint op `0.0.0`) |
 
-Vervang `__APP__`, `__DB_USER__` en `__DB_NAME__` net als bij `docker-traefik`.
+Vervang `__APP__`, `__SUBDOMAIN__`, `__DB_USER__` en `__DB_NAME__` net als bij `docker-traefik`.
 
 ### Afwijkende repo's
 
@@ -113,8 +131,11 @@ beschrijft ze volledig. In het kort:
 
 **`deploy-production.yml`**
 - inputs: `registry`, `deploy_directory` (altijd `/volume1/docker/__APP__`), `compose_file`
-  (`docker-compose.prod.yml`), `image_tag`, `acc_directory` (altijd `/volume1/docker/__APP__-acc`,
+  (`docker-compose.prod.yml`), `image_tag` (de commit), `persistent_volumes` (altijd
+  `__APP__-db-data`, zie *Productiedata*), `acc_directory` (altijd `/volume1/docker/__APP__-acc`,
   het vangnet uit *Afbreken* hierboven), plus de optionele `runner`, `health_check_delay`, `prune_images` en `prune_age`
+- stopt en start de stack met `--remove-orphans`: containers van services die niet meer in de
+  compose staan (bijvoorbeeld een oudere opzet met één app-container) verdwijnen mee
 - secrets: `registry_username`, `registry_password`, `env_file_content` (regels in de vorm `KEY=VALUE`, worden de `.env` op de NAS)
 
 **`deploy-acceptance.yml`**
@@ -135,14 +156,14 @@ beschrijft ze volledig. In het kort:
   en `migrations_directory`
 
 `build-push-image`, `deploy-production`, `deploy-acceptance` en `teardown-acceptance` draaien op de self-hosted runner **`shelly`** op de NAS.
-Release-please, CI en de acc-check van `deploy-production.yml` draaien op `ubuntu-latest`.
+CI en de acc-check van `deploy-production.yml` draaien op `ubuntu-latest`.
 
 **Opschonen.** `deploy-production.yml` en `deploy-acceptance.yml` ruimen na elke run de NAS op, ook als de deploy mislukt
 (`teardown-acceptance.yml` doet hetzelfde na een teardown):
 images die geen enkele container gebruikt, losse anonieme volumes en losse build-cache. Images van
 draaiende **en** gestopte containers blijven staan, en named volumes worden nooit geprunet. Alles wat
-weg is, staat nog in de registry. Een rollback werkt dus gewoon. De databases staan in bind mounts
-(`./data/postgres`), en die raakt geen prune. Met `prune_age` (bijv. `168h`) houd je recente images
+weg is, staat nog in de registry. Een rollback werkt dus gewoon. De productiedatabase staat in een
+extern volume en de acc-database in een bind mount (`./data/postgres`); geen van beide raakt een prune. Met `prune_age` (bijv. `168h`) houd je recente images
 nog even vast; `prune_images: false` zet het opschonen uit.
 
 ## Instellingen in de GitHub-repo
@@ -160,9 +181,6 @@ nog even vast; `prune_images: false` zet het opschonen uit.
 Komt er een nieuwe omgevingsvariabele bij de server? Voeg hem dan op **alle** plekken toe:
 `environment:` in `docker-compose.prod.yml` en `docker-compose.acc.yml`, `env_file_content` in
 `deploy.yml` en `acc.yml`, en `.env.example`.
-
-Geef de repo onder *Settings → Actions → General* **"Allow GitHub Actions to create and approve
-pull requests"**, anders kan release-please geen PR openen.
 
 ## CI
 
