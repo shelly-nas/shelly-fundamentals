@@ -1,5 +1,5 @@
 ---
-description: Zet een nieuwe shelly-nas app op (React + Postgres + Node of Python, Docker, Traefik, release-please, deploy naar de NAS)
+description: Zet een nieuwe shelly-nas app op (React + Postgres + Node of Python, Docker, Traefik, acc per PR, deploy naar de NAS)
 argument-hint: "[app-naam] [subdomein]"
 ---
 
@@ -32,8 +32,6 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 | `skills/release-deploy/templates/deploy.yml` | `.github/workflows/deploy.yml` |
 | `skills/release-deploy/templates/acc.yml` | `.github/workflows/acc.yml` |
 | `skills/release-deploy/templates/ci.yml` | `.github/workflows/ci.yml` (Node; bij Python `ci-python.yml` met de server-stappen vervangen, zie `release-deploy`) |
-| `skills/release-deploy/templates/release-please-config.json` | `release-please-config.json` (bij Python: de `extra-files`-regel voor `server/package.json` weghalen) |
-| `skills/release-deploy/templates/.release-please-manifest.json` | `.release-please-manifest.json` |
 | `skills/design-richtlijnen/theme.ts` | `client/src/theme.ts` |
 | `app-template/CLAUDE.md` | `CLAUDE.md` (`__BACKEND__` = "Node 22 + Express + TypeScript" of "Python 3.12 + FastAPI") |
 | `app-template/.claude/settings.json` | `.claude/settings.json` |
@@ -41,7 +39,7 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 Bouw daarna een minimale, werkende basis:
 - `client/`: Vite + React + TypeScript + MUI met het thema, light/dark-wissel (systeemvoorkeur + keuze in localStorage), de app-shell uit `design-richtlijnen/patterns.md`, één startpagina die
   `/api/health` aanroept, en Vitest met één test. Figtree via `@fontsource/figtree` (400/500/600/700).
-- `server/`: `GET /api/health` (geeft `{ status: "ok", version }`), databaseverbinding via de
+- `server/`: `GET /api/health` (geeft `{ status: "ok", version }`, met `version` uit `APP_VERSION` en anders `package.json`), databaseverbinding via de
   `DB_*`-variabelen, een migratierunner (`runMigrations`, zie `database-migraties`) die vóór het luisteren draait,
   een lege `migrations/` met een README, en één test.
 - `database/`: `init.sql` (met een eerste tabel als de app er al een nodig heeft), een idempotente
@@ -63,8 +61,6 @@ Gebruik `npm install` om de lockfiles te genereren. Schrijf ze niet met de hand.
 Commit als `feat: scaffold __APP__`. Geef de gebruiker daarna deze checklist voor wat alleen zij zelf kunnen doen:
 1. GitHub-repo → *Settings → Secrets and variables → Actions*: variables `REGISTRY_URL`, `REGISTRY_USERNAME`,
    `DB_USER`, `DB_NAME`; secrets `REGISTRY_PASSWORD` en `DB_PASSWORD` (plus bijvoorbeeld `ANTHROPIC_API_KEY` voor AI-apps).
-2. *Settings → Actions → General*: "Allow GitHub Actions to create and approve pull requests" aanzetten.
-3. Op de NAS: `mkdir -p /volume1/docker/__APP__/data/postgres && sudo chown -R 70:70 /volume1/docker/__APP__/data/postgres`.
-4. Werk voortaan via PR's: elke PR komt eerst op `__SUBDOMAIN__-acc.shelly-nas.nl`. De map
-   `/volume1/docker/__APP__-acc` maakt de workflow zelf aan.
-5. De eerste release-PR van release-please mergen. Dat deployt `__SUBDOMAIN__.shelly-nas.nl`.
+2. Werk voortaan via PR's: elke PR komt eerst op `__SUBDOMAIN__-acc.shelly-nas.nl`, en gaat bij het
+   mergen direct naar `__SUBDOMAIN__.shelly-nas.nl`. De mappen op de NAS maken de workflows zelf aan,
+   net als het volume `__APP__-db-data` voor de productiedata.

@@ -43,7 +43,8 @@ agents). Anders Node.
 
 ### Voor beide backends
 - Luistert op poort **3000** (env `SERVER_PORT`), zodat nginx, Traefik en compose identiek blijven.
-- Alle routes onder `/api`. Er is altijd een `GET /api/health` die 200 geeft en de versie meldt;
+- Alle routes onder `/api`. Er is altijd een `GET /api/health` die 200 geeft en de versie meldt
+  (`APP_VERSION`, de gedeployde commit; lokaal de versie uit `package.json`);
   de healthcheck in productie hangt daarvan af.
 - Databaseconfig via `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
 - Migraties staan in `server/migrations/` en worden bij het opstarten toegepast. Zie de skill `database-migraties`.
@@ -63,7 +64,7 @@ agents). Anders Node.
 ## Gerelateerde skills
 
 - `docker-traefik`: compose-bestanden, Dockerfiles en Traefik-labels
-- `release-deploy`: release-please en de GitHub Actions-workflows
+- `release-deploy`: de GitHub Actions-workflows, acc per PR, direct naar productie bij een merge, en de persistente productiedata
 - `database-migraties`: wijzigingen aan het schema
 - `conventional-commits`: commitberichten
 - `design-richtlijnen`: huisstijl (Web App Template), componenten, schermpatronen en het MUI-thema
