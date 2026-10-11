@@ -15,7 +15,7 @@ een browser voor alle borden). Elke nieuwe app volgt dit, zodat alle apps op de 
 | `tokens.css` | Alle tokens als CSS-variabelen (kleur, spacing, radius, schaduw) voor light en dark. **De bron van waarheid.** |
 | `theme.ts` | Dezelfde waarden als MUI-thema (`themeSettings(mode)`), inclusief component-overrides. Zet hem in `client/src/theme.ts`. |
 | `components.css` | Referentie-implementatie van alle componenten en states. Dit is de spec voor maten en kleuren; in een MUI-app regelt `theme.ts` dit. |
-| `patterns.md` | Schermpatronen: app-shell, lijst/dashboard, instellingenformulier, mobiele detailpagina, edge cases. **Lees dit bij het bouwen van een nieuw scherm.** |
+| `patterns.md` | Schermpatronen: app-shell (desktop en mobiel), lijst/dashboard, instellingenformulier, mobiele detailpagina, edge cases. **Lees dit bij het bouwen van een nieuw scherm.** |
 
 ### Zonder MUI (gewone CSS)
 

@@ -2,7 +2,7 @@
 
 Afgeleid uit de schermen in het Web App Template (`reference/web-app-template.html`).
 
-## App-shell (desktop)
+## App-shell (desktop, vanaf `md`)
 
 ```
 ┌──────────────┬──────────────────────────────────────────────┐
@@ -23,11 +23,34 @@ Afgeleid uit de schermen in het Web App Template (`reference/web-app-template.ht
   Bovenaan een app-logo plus naam, daaronder nav-items (gap 4, met optionele tellers), onderaan de gebruiker (avatar 32px, naam en rol).
   Groepen staan 32px uit elkaar.
 - **Main:** `min-width: 0`, padding 32px, achtergrond `--bg`.
-- Responsief zonder breakpoints: `display:flex; flex-wrap:wrap`, met de sidebar op `flex: 1 1 248px` en
-  main op `flex: 999 1 560px`. Op smalle schermen komt de sidebar dan boven de content. Voor
-  echte mobiele apps kies je een topbar met een menu.
+- Responsief met één breakpoint (`md`): vanaf `md` staat de sidebar vast (248px, `position: sticky`,
+  `top: 0`, `height: 100vh`, `overflow-y: auto`). Daaronder de mobiele shell hieronder. Laat de
+  sidebar nooit boven de content wrappen: dan opent een telefoon op het hele menu in plaats van op de pagina.
 - **Paginakop:** Title (24/600) met een muted subtekst (8px gap) links; zoeken en de primaire actie rechts
   (`justify-content: space-between; align-items: flex-end; flex-wrap: wrap`).
+
+## App-shell (mobiel, onder `md`)
+
+```
+┌──────────────────────────┐      ┌──────────────┬───────────┐
+│ ☰  [A] App name          │      │ [A] App name │░░░░░░░░░░░│
+├──────────────────────────┤      │              │░░░░░░░░░░░│
+│ Page title               │  ☰→  │ ▣ Overview   │░░ scrim ░░│
+│ Subtekst                 │      │ □ Products   │░░░░░░░░░░░│
+│ ┌──── content ─────────┐ │      │ □ Orders  3  │░░░░░░░░░░░│
+│ └──────────────────────┘ │      │ (JC) Name    │░░░░░░░░░░░│
+└──────────────────────────┘      └──────────────┴───────────┘
+```
+
+- **Topbalk:** `position: fixed`, 56px hoog, achtergrond `--surface`, onderrand `--border`, padding 0 8px,
+  `z-index` van de app bar. Links een menuknop van 44×44 (`aria-label` "Menu openen"), daarnaast het
+  app-logo plus naam, dezelfde als bovenin de sidebar.
+- **Menu:** de menuknop opent dezelfde navigatie als de sidebar in een MUI `Drawer` (links, breedte
+  248 + 32px, max `85vw`, `backgroundImage: none`). Een klik op een nav-item navigeert en sluit de drawer;
+  Escape of de scrim sluiten hem ook.
+- **Main:** padding 16px opzij (24px vanaf `sm`) en bovenin 56 + 24px, zodat de paginakop onder de topbalk begint.
+- Bouw de navigatie één keer (logo, items, onderste controls) en hang hem in de sidebar of in de drawer,
+  zodat tellers en acties op beide plekken gelijk blijven.
 
 ## Lijst / dashboard
 
