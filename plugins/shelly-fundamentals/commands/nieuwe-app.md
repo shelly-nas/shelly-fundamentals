@@ -61,6 +61,7 @@ Gebruik `npm install` om de lockfiles te genereren. Schrijf ze niet met de hand.
 Commit als `feat: scaffold __APP__`. Geef de gebruiker daarna deze checklist voor wat alleen zij zelf kunnen doen:
 1. GitHub-repo → *Settings → Secrets and variables → Actions*: variables `REGISTRY_URL`, `REGISTRY_USERNAME`,
    `DB_USER`, `DB_NAME`; secrets `REGISTRY_PASSWORD` en `DB_PASSWORD` (plus bijvoorbeeld `ANTHROPIC_API_KEY` voor AI-apps).
-2. Werk voortaan via PR's: elke PR komt eerst op `__SUBDOMAIN__-acc.shelly-nas.nl`, en gaat bij het
+2. GitHub-repo → *Settings → General*: zet *Automatically delete head branches* aan, zodat elke branch na de merge verdwijnt.
+3. Werk voortaan via PR's: elke PR komt eerst op `__SUBDOMAIN__-acc.shelly-nas.nl`, en gaat bij het
    mergen direct naar `__SUBDOMAIN__.shelly-nas.nl`. De mappen op de NAS maken de workflows zelf aan,
    net als het volume `__APP__-db-data` voor de productiedata.
