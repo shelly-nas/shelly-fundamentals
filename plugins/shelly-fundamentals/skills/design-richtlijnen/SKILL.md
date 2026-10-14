@@ -13,13 +13,14 @@ een browser voor alle borden). Elke nieuwe app volgt dit, zodat alle apps op de 
 | Bestand | Gebruik |
 |---|---|
 | `tokens.css` | Alle tokens als CSS-variabelen (kleur, spacing, radius, schaduw) voor light en dark. **De bron van waarheid.** |
-| `theme.ts` | Dezelfde waarden als MUI-thema (`themeSettings(mode)`), inclusief component-overrides. Zet hem in `client/src/theme.ts`. |
-| `components.css` | Referentie-implementatie van alle componenten en states. Dit is de spec voor maten en kleuren; in een MUI-app regelt `theme.ts` dit. |
+| `components.css` | Alle componenten en states in gewone CSS. Dit is de spec voor maten en kleuren, en de basis van de stylesheet van een nieuwe app. |
+| `theme.ts` | Alleen voor apps met MUI: dezelfde waarden als MUI-thema (`themeSettings(mode)`), inclusief component-overrides. Zet hem in `client/src/theme.ts`. |
 | `patterns.md` | Schermpatronen: app-shell (desktop en mobiel), lijst/dashboard, instellingenformulier, mobiele detailpagina, edge cases. **Lees dit bij het bouwen van een nieuw scherm.** |
 
-### Zonder MUI (gewone CSS)
+### Gewone CSS (standaard)
 
-Een app die (nog) geen MUI gebruikt, volgt dezelfde regels met `tokens.css` en `components.css`:
+Nieuwe apps gebruiken geen componentbibliotheek, zodat de bundel klein blijft (zie `stack-voorkeuren`).
+Ze volgen de regels met `tokens.css` en `components.css`:
 
 - Kopieer `tokens.css` naar `client/src/tokens.css` en importeer in `main.jsx` in deze volgorde:
   `@fontsource/figtree/{400,500,600,700}.css`, `tokens.css` en dan de eigen stylesheet.
@@ -29,6 +30,8 @@ Een app die (nog) geen MUI gebruikt, volgt dezelfde regels met `tokens.css` en `
 - Een bestaande app omzetten: vervang eerst de eigen kleurvariabelen door de rollen (ook waar JSX ze
   als string doorgeeft, bijvoorbeeld `stroke={`var(${kleur})`}`). Zet daarna dark mode van
   `@media (prefers-color-scheme)` om naar `.theme-dark`, anders wint de mediaquery van de toggle.
+- Een app met MUI (bestaand, of nodig voor een datagrid of datumkiezer) gebruikt `theme.ts` in plaats
+  van `components.css`; de regels hieronder gelden net zo.
 - **Grafiekkleuren zijn geen UI-rollen.** Houd een gevalideerd reekspalet (`--reeks-1..n`) apart, met
   een eigen waarde onder `.theme-dark`. Een reeks betekent geen actie of status, dus geen `--primary`.
 

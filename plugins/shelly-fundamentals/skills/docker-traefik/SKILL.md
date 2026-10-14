@@ -113,6 +113,9 @@ Houd beide bestanden gelijk. De flow en de database staan in de skill `release-d
 - `nginx.conf` doet SPA-fallback (`try_files ... /index.html`) en proxyt `/api/` naar `server:3000`.
   De upstream staat in een variabele met `resolver 127.0.0.11`, zodat nginx ook opstart als de
   server nog niet draait.
+- `nginx.conf` comprimeert JS, CSS en JSON met gzip. `/assets/` (bestandsnamen met een hash van Vite)
+  krijgt een cache van een jaar (`immutable`), `index.html` krijgt `no-cache`, zodat een deploy direct
+  zichtbaar is. Een ontbrekend asset geeft een 404, niet `index.html`.
 
 ## Images bouwen
 

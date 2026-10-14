@@ -6,7 +6,7 @@ Deze app volgt de shelly-nas standaarden uit de plugin **`shelly-fundamentals@sh
 
 Is de plugin niet geladen, dan gelden in elk geval deze regels:
 
-- **Stack:** React + Vite + TypeScript + MUI (`client/`), __BACKEND__ (`server/`, poort 3000, alles onder
+- **Stack:** React + Vite + TypeScript met gewone CSS (`client/`), __BACKEND__ (`server/`, poort 3000, alles onder
   `/api`, met `GET /api/health`), PostgreSQL 16 (`database/`).
 - **Lokaal:** `docker-compose.yml` bouwt vanuit de broncode. **Productie:** `docker-compose.prod.yml`
   gebruikt alleen images met een gepinde `IMAGE_TAG` (de commit), achter Traefik op `shelly-network`, op

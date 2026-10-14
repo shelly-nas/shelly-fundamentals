@@ -1,5 +1,5 @@
 ---
-description: Zet een nieuwe shelly-nas app op (React + Postgres + Node of Python, Docker, Traefik, acc per PR, deploy naar de NAS)
+description: Zet een nieuwe shelly-nas app op (React + Postgres + Node, of Python voor lokaal ML, Docker, Traefik, acc per PR, deploy naar de NAS)
 argument-hint: "[app-naam] [subdomein]"
 ---
 
@@ -10,7 +10,7 @@ Zet in de huidige repo een nieuwe app op volgens de shelly-nas standaarden. Argu
 Vraag wat nog ontbreekt in één keer, met voorstellen als standaard:
 - **App-naam** (`__APP__`, kebab-case, bijvoorbeeld `finance-app`). Daarmee worden de images, containers en de deploymap `/volume1/docker/__APP__` benoemd.
 - **Subdomein** (`__SUBDOMAIN__`, bijvoorbeeld `finance` voor `finance.shelly-nas.nl`). Dit moet uniek zijn op de NAS.
-- **Doet de app iets met AI?** Ja → Python/FastAPI-backend, nee → Node/Express-backend (zie de skill `stack-voorkeuren`).
+- **Draait de app lokaal ML** (eigen modellen, PyTorch, lokale embeddings, zware data-analyse)? Ja → Python/FastAPI-backend, nee → Node/Fastify-backend, ook als de app de Claude API gebruikt (zie de skill `stack-voorkeuren`).
 - **Databasegebruiker en -naam** (`__DB_USER__`, `__DB_NAME__`).
 - Een zin over wat de app doet.
 
@@ -32,12 +32,12 @@ Kopieer de templates uit de plugin en vervang overal de placeholders. Laad eerst
 | `skills/release-deploy/templates/deploy.yml` | `.github/workflows/deploy.yml` |
 | `skills/release-deploy/templates/acc.yml` | `.github/workflows/acc.yml` |
 | `skills/release-deploy/templates/ci.yml` | `.github/workflows/ci.yml` (Node; bij Python `ci-python.yml` met de server-stappen vervangen, zie `release-deploy`) |
-| `skills/design-richtlijnen/theme.ts` | `client/src/theme.ts` |
-| `app-template/CLAUDE.md` | `CLAUDE.md` (`__BACKEND__` = "Node 22 + Express + TypeScript" of "Python 3.12 + FastAPI") |
+| `skills/design-richtlijnen/tokens.css` | `client/src/tokens.css` |
+| `app-template/CLAUDE.md` | `CLAUDE.md` (`__BACKEND__` = "Node 22 + Fastify + TypeScript" of "Python 3.12 + FastAPI") |
 | `app-template/.claude/settings.json` | `.claude/settings.json` |
 
 Bouw daarna een minimale, werkende basis:
-- `client/`: Vite + React + TypeScript + MUI met het thema, light/dark-wissel (systeemvoorkeur + keuze in localStorage), de app-shell uit `design-richtlijnen/patterns.md`, één startpagina die
+- `client/`: Vite + React + TypeScript met gewone CSS (`tokens.css` plus een stylesheet volgens `components.css`, zie `design-richtlijnen`), light/dark-wissel (systeemvoorkeur + keuze in localStorage), de app-shell uit `design-richtlijnen/patterns.md`, één startpagina die
   `/api/health` aanroept, en Vitest met één test. Figtree via `@fontsource/figtree` (400/500/600/700).
 - `server/`: `GET /api/health` (geeft `{ status: "ok", version }`, met `version` uit `APP_VERSION` en anders `package.json`), databaseverbinding via de
   `DB_*`-variabelen, een migratierunner (`runMigrations`, zie `database-migraties`) die vóór het luisteren draait,

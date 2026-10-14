@@ -15,14 +15,14 @@ iets met Docker doet, maar niet als je een kleur aanpast.
 plugins/shelly-fundamentals/
 ├── .claude-plugin/plugin.json
 ├── skills/
-│   ├── stack-voorkeuren/              React/Vite, Node of Python (AI), Postgres, npm
+│   ├── stack-voorkeuren/              React/Vite, Node/Fastify (Python voor lokaal ML), Postgres, npm
 │   ├── docker-traefik/                compose lokaal + prod, Dockerfiles, nginx, Traefik-labels
 │   │   └── templates/
 │   ├── release-deploy/                CI, acc per PR, deploy bij merge, productiedata-volume
 │   │   └── templates/
 │   ├── database-migraties/            init.sql, seed, genummerde migraties
 │   ├── conventional-commits/          commitformaat voor main
-│   └── design-richtlijnen/            Web App Template: tokens, MUI-thema, componenten, patronen
+│   └── design-richtlijnen/            Web App Template: tokens, componenten (CSS), patronen, optioneel MUI-thema
 ├── commands/nieuwe-app.md             /nieuwe-app: zet een complete app op
 └── app-template/                      CLAUDE.md en .claude/settings.json voor app-repo's
 ```

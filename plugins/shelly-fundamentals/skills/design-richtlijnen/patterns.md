@@ -45,8 +45,9 @@ Afgeleid uit de schermen in het Web App Template (`reference/web-app-template.ht
 - **Topbalk:** `position: fixed`, 56px hoog, achtergrond `--surface`, onderrand `--border`, padding 0 8px,
   `z-index` van de app bar. Links een menuknop van 44×44 (`aria-label` "Menu openen"), daarnaast het
   app-logo plus naam, dezelfde als bovenin de sidebar.
-- **Menu:** de menuknop opent dezelfde navigatie als de sidebar in een MUI `Drawer` (links, breedte
-  248 + 32px, max `85vw`, `backgroundImage: none`). Een klik op een nav-item navigeert en sluit de drawer;
+- **Menu:** de menuknop opent dezelfde navigatie als de sidebar in een drawer (links, breedte
+  248 + 32px, max `85vw`): een `<dialog>` met `showModal()` en een scrim via `::backdrop`, of in een
+  MUI-app een `Drawer` met `backgroundImage: none`. Een klik op een nav-item navigeert en sluit de drawer;
   Escape of de scrim sluiten hem ook.
 - **Main:** padding 16px opzij (24px vanaf `sm`) en bovenin 56 + 24px, zodat de paginakop onder de topbalk begint.
 - Bouw de navigatie één keer (logo, items, onderste controls) en hang hem in de sidebar of in de drawer,
