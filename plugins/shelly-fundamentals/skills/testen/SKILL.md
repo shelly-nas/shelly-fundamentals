@@ -34,7 +34,11 @@ Bij een **bugfix** is stap 1 een test die de bug reproduceert. Commit test en fi
 - Mock `fetch` naar `/api/...` op netwerkniveau (MSW of een gestubde `fetch`), niet de component.
 - Pure functies (berekeningen, parsers, formattering) als gewone unittests, zonder render.
 
-Coverage in `vite.config.ts` (`@vitest/coverage-v8` als devDependency), zodat `npm test` en CI de drempel afdwingen:
+**De drempel in CI** staat in `.github/workflows/ci.yml`: `client_coverage_threshold` en
+`server_coverage_threshold` van `shared-workflows/ci-node-postgres.yml`. CI meet zelf (Vitest-coverage voor de
+client, c8 over `dist/` voor de server), zet de cijfers in de job summary en faalt onder de drempel.
+
+Om lokaal dezelfde controle te hebben: coverage in `vite.config.ts` (`@vitest/coverage-v8` als devDependency):
 
 ```ts
 test: {
@@ -62,7 +66,8 @@ met `"test": "vitest run --coverage"` in `package.json`.
 "test": "tsc && node --test --experimental-test-coverage --test-coverage-exclude='dist/**/*.test.js' --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-functions=80 'dist/**/*.test.js'"
 ```
 
-Onder de drempel eindigt `node --test` met exitcode 1, en dan faalt CI ook.
+Onder de drempel eindigt `node --test` met exitcode 1. CI meet de server zelf met c8 over `dist/`; `npm test`
+moet daarvoor de tests op `dist/` draaien, niet via `tsx`.
 
 ## Python (`server/`): pytest
 
@@ -77,6 +82,7 @@ Test FastAPI-routes met `TestClient`, net als `app.inject()` bij Node.
 
 ## Bestaande repo onder de 80%
 
-Zet de drempel niet ineens op 80%, want dan faalt CI meteen voor iedereen. Meet de huidige coverage, zet
-de drempel op dat getal (naar beneden afgerond) en verhoog hem bij elke PR die tests toevoegt, tot 80%.
+Zet de drempel niet ineens op 80%, want dan faalt CI meteen voor iedereen. Zet hem eerst op `'0'`: CI meet dan
+en rapporteert zonder te falen. Neem daarna het laagste van de vier gemeten percentages, naar beneden afgerond,
+als drempel, en verhoog hem bij elke PR die tests toevoegt, tot 80%.
 Nieuwe of gewijzigde code test je altijd volgens de cyclus hierboven.

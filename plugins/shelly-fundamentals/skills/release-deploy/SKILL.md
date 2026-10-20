@@ -195,6 +195,8 @@ inputs mee (`templates/ci.yml`). Minimaal:
 - een Postgres-servicecontainer waarop `init.sql` en `seed.sql` worden toegepast, en de seed
   nog een keer (dat moet een no-op zijn)
 - een controle op dubbele migratienummers, en alle migraties twee keer toepassen
+- coverage van client en server met een minimum (`client_coverage_threshold`, `server_coverage_threshold`,
+  standaard 80% voor een nieuwe app; skill `testen`)
 
 **Node-backend in JavaScript, zonder build.** `ci-node-postgres.yml` draait altijd `tsc --noEmit` per
 project in `typecheck_projects` (een lege lijst kan niet: een matrix moet minstens één waarde hebben) en
