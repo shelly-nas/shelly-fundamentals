@@ -1,7 +1,7 @@
 {
   "name": "shelly-fundamentals",
   "description": "Skills en templates voor React + Postgres + Node (Python voor lokaal ML) apps achter Traefik op de Shelly NAS, met acc per PR, direct deployen bij een merge en de shared-workflows.",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "author": {
     "name": "Jelle van der Graaf"
   },
