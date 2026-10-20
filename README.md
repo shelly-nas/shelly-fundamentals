@@ -22,8 +22,13 @@ plugins/shelly-fundamentals/
 │   │   └── templates/
 │   ├── database-migraties/            init.sql, seed, genummerde migraties
 │   ├── conventional-commits/          commitformaat voor main
+│   ├── backend-patronen/              Fastify-routes, validatie, foutformaat, queries
+│   ├── testen/                        test-first, 80% coverage (Vitest, node --test, pytest)
+│   ├── verificatie/                   typecheck, lint, tests en build voor "klaar"
+│   ├── shelly-review/                 review op beveiliging, correctheid en de shelly-afspraken
 │   └── design-richtlijnen/            Web App Template: tokens, componenten (CSS), patronen, optioneel MUI-thema
 ├── commands/nieuwe-app.md             /nieuwe-app: zet een complete app op
+├── commands/klaar.md                  /klaar: verificatie, review, commit en PR
 └── app-template/                      CLAUDE.md en .claude/settings.json voor app-repo's
 ```
 
@@ -59,4 +64,7 @@ en in `.claude-plugin/marketplace.json`, en push. Haal de wijziging lokaal binne
 `/plugin marketplace update shelly-nas`.
 
 Bron van de huidige standaarden: `shelly-nas/FinanceApp` (compose, workflows), het Web App Template uit Claude Design (design) en
-`shelly-nas/shared-workflows`.
+`shelly-nas/shared-workflows`. `backend-patronen`, `testen`, `verificatie`, `shelly-review` en `/klaar` zijn een
+bewerking van een selectie uit [everything-claude-code](https://github.com/affaan-m/everything-claude-code)
+(MIT, © Affaan Mustafa), herschreven voor deze stack. Niet overgenomen: de rest van die repo (andere talen,
+agents en hooks), omdat die in elke sessie context kost of al in Claude Code zit.

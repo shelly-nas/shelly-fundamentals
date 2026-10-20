@@ -42,6 +42,25 @@ Regels:
   van de kolom, pas in een latere PR verdwijnt de kolom. Markeer het als `feat!:` en beschrijf het migratiepad.
 - Migratie en code die hem nodig heeft gaan in **één commit**.
 
+## Schema: typen, constraints en indexen
+
+| Gebruik | Type | Niet |
+|---|---|---|
+| ID | `bigint GENERATED ALWAYS AS IDENTITY` | `serial`, `int`, willekeurige UUID als primaire sleutel |
+| Tekst | `text` (met een `CHECK` op lengte als dat nodig is) | `varchar(255)` zonder reden |
+| Tijdstip | `timestamptz` | `timestamp` zonder tijdzone |
+| Geld | `numeric(12,2)` | `float`, `real` |
+| Vlag | `boolean` | `int`, `text` |
+
+- Namen in `kleine_letters_met_underscores`, zonder aanhalingstekens.
+- Leg regels vast in het schema: `NOT NULL`, `UNIQUE`, `CHECK`, en een foreign key met een bewuste `ON DELETE`.
+- **Een index op elke foreign key**, en op kolommen waarop je filtert of sorteert (`WHERE`, `JOIN`,
+  `ORDER BY`). Bij een samengestelde index eerst de kolommen met `=`, dan die met een bereik.
+- Een trage query: bekijk hem met `EXPLAIN ANALYZE` en zoek naar een `Seq Scan` op een grote tabel.
+- Het applicatieaccount krijgt alleen de rechten die het nodig heeft, geen `GRANT ALL`.
+
+Queries zelf (geparametriseerd, geen `SELECT *`, geen N+1, korte transacties): skill `backend-patronen`.
+
 ## Implementatie in de server
 
 Een migratierunner is klein; schrijf hem zelf, zonder framework:
