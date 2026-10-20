@@ -38,7 +38,7 @@ een AI-request op het model. Daarom wegen twee dingen zwaarder:
   - laad grote pagina's lazy (`React.lazy` per route);
   - kies kleine libraries (`date-fns` in plaats van `moment`, losse functies in plaats van heel `lodash`);
   - controleer de grootte in de uitvoer van `vite build`.
-- Tests: Vitest (`npm test` = `vitest run`).
+- Tests: Vitest met coverage (`npm test` = `vitest run --coverage`, drempel 80%). Zie de skill `testen`.
 - API-aanroepen gaan altijd naar het relatieve pad `/api/...`. Nooit een hostnaam of poort hardcoden:
   lokaal proxyt nginx `/api/` naar de server, in productie routeert Traefik het.
 - Packagemanager: **npm**, met `package-lock.json` in git en `npm ci` in Dockerfiles en CI.
@@ -58,14 +58,15 @@ lokale embeddings, of zware data-analyse met pandas of numpy.
 - Bouw de app in een functie (`buildApp()`) en start hem apart, zodat tests `app.inject()` gebruiken
   zonder poort.
 - Build met `tsc` naar `dist/`, start met `node dist/index.js`.
-- Tests met de ingebouwde `node --test`.
+- Tests met de ingebouwde `node --test`, met coverage gemeten op `dist/` (skill `testen`). Patronen voor routes,
+  fouten en queries: skill `backend-patronen`.
 - Voor de Claude API: de officiële `@anthropic-ai/sdk` en het nieuwste geschikte Claude-model.
 
 ### Python (lokaal ML)
 - Python 3.12, FastAPI + uvicorn, `psycopg` (v3) voor Postgres. Geen ORM; gewone SQL.
 - Dependencies in `requirements.txt` (gepind), app-code in `server/app/`, entrypoint `app.main:app`.
 - Voor de Claude API: de officiële `anthropic` SDK.
-- Tests met `pytest`.
+- Tests met `pytest` en `pytest-cov` (drempel 80%, skill `testen`).
 - Een bestaande Python-app (zoals een chatbot) blijft Python; herschrijven levert geen snelheid op.
 
 ### Voor beide backends
@@ -95,3 +96,5 @@ lokale embeddings, of zware data-analyse met pandas of numpy.
 - `database-migraties`: wijzigingen aan het schema
 - `conventional-commits`: commitberichten
 - `design-richtlijnen`: huisstijl (Web App Template), tokens, componenten, schermpatronen en het optionele MUI-thema
+- `backend-patronen`: routes, validatie, foutformaat, foutafhandeling en queries in de Fastify-server
+- `testen`, `verificatie` en `shelly-review`: test-first met 80% coverage, controleren voor "klaar", en review; `/klaar` bundelt ze tot een PR
